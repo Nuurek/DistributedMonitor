@@ -6,8 +6,6 @@ import zmq
 import sys
 from typing import Dict
 
-DEFAULT_EXCHANGE_NAME = 'clients'
-
 
 class Communicator(object):
 
