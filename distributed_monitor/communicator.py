@@ -40,10 +40,8 @@ class Communicator(object):
             self._log(message)
 
     def _on_sig_int(self, signal, frame):
-        self.receive_socket.close()
-        for address, socket in self.send_sockets.items():
-            socket.close()
-        self._log("Closed sockets.")
+        self.context.term()
+        self._log("Terminated context.")
 
         sys.exit(0)
 

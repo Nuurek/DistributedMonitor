@@ -1,44 +1,20 @@
-import signal
-import sys
 import argparse
-from subprocess import Popen
+import json
+import sys
 
+from peer import Peer
 
-BASE_PORT_NUMBER = 50000
+DEFAULT_PEERS_FILE_NAME = 'peers.json'
 
-peers = []
-
-
-def kill_peers(signal_id, frame):
-    for peer in peers:
-        peer.kill()
-    sys.exit(0)
-
-
-def main():
+if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--number_of_peers', type=int, help="Number of peers to spawn")
+    parser.add_argument('--name', type=str, required=True, help="Name of the peer")
+    parser.add_argument('--peers_file', type=str, help="Path to the config file", default=DEFAULT_PEERS_FILE_NAME)
 
     args = parser.parse_args(sys.argv[1:])
 
-    print("Spawning peers")
-    port_numbers = list(range(BASE_PORT_NUMBER, BASE_PORT_NUMBER + args.number_of_peers))
-    for peer_id in range(args.number_of_peers):
-        port_number = BASE_PORT_NUMBER + peer_id
-        addresses = [f'tcp://localhost:{port}' for port in port_numbers if port != port_number]
-        command = [
-            'python',
-            'peer.py',
-            f'--name=peer{peer_id}',
-            f'--port={port_number}',
-            f'--addresses'
-        ]
-        command += addresses
-        peers.append(Popen(command))
+    with open(args.peers_file) as file:
+        peers_config = json.load(file)
 
-    signal.signal(signal.SIGINT, kill_peers)
-    signal.pause()
-
-
-if __name__ == '__main__':
-    main()
+    peer = Peer(args.name, peers_config)
+    peer.run()
