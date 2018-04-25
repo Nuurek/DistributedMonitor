@@ -4,7 +4,7 @@ import signal
 import sys
 from subprocess import Popen
 
-from main import DEFAULT_PEERS_FILE_NAME
+from examples.producer_consumer.main import DEFAULT_PEERS_FILE_NAME
 
 
 def main():
