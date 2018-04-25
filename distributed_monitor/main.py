@@ -2,7 +2,7 @@ import argparse
 import json
 import sys
 
-from distributed_monitor.peer import Peer
+from distributed_monitor.monitor import DistributedMonitor
 
 DEFAULT_PEERS_FILE_NAME = 'peers.json'
 
@@ -16,5 +16,5 @@ if __name__ == '__main__':
     with open(args.peers_file) as file:
         config = json.load(file)
 
-    peer = Peer(args.name, config)
+    peer = DistributedMonitor('default-channel', args.name, config)
     peer.run()

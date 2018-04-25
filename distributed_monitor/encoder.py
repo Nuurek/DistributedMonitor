@@ -1,7 +1,7 @@
 import json
 from collections import deque
 
-from distributed_monitor.distributed_mutex import Token
+from distributed_monitor.mutex import Token
 
 
 class Encoder(json.JSONEncoder):
