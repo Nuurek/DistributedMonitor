@@ -33,8 +33,13 @@ class DistributedMutex:
         else:
             self.token = None
 
+        self._is_locked: bool = False
+
     def lock(self):
-        pass
+        self._is_locked = True
 
     def unlock(self):
-        pass
+        self._is_locked = False
+
+    def is_locked(self) -> bool:
+        return self._is_locked
