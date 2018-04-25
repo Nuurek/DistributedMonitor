@@ -23,13 +23,13 @@ def main():
     args = parser.parse_args(sys.argv[1:])
 
     with open(args.peers_file) as file:
-        peers_config: dict = json.load(file)
+        config: dict = json.load(file)
 
     print("Spawning peers")
-    for name, peer in peers_config.items():
+    for name, peer in config['peers'].items():
         command = [
             'python',
-            'main   .py',
+            'main.py',
             f'--name={name}',
             f'--peers_file={args.peers_file}'
         ]

@@ -1,10 +1,11 @@
 import signal
-
+import sys
 import threading
+from typing import Dict
 
 import zmq
-import sys
-from typing import Dict
+
+from distributed_monitor.encoder import Encoder, Decoder
 
 
 class Communicator(object):
@@ -26,7 +27,7 @@ class Communicator(object):
             self.send_sockets[address].connect(address)
             self._log(f"Connected to {address}")
 
-        self.send_sockets[address].send_json(message)
+        self.send_sockets[address].send_json(message, cls=Encoder)
         self._log(f"Sent '{message}' to {address}")
 
     def broadcast_message(self, addresses, message):
@@ -36,7 +37,7 @@ class Communicator(object):
     def _receive_messages(self):
         self.receive_socket.bind(f'tcp://*:{self.port}')
         while True:
-            message = self.receive_socket.recv_json()
+            message = self.receive_socket.recv_json(cls=Decoder)
             self._log(message)
 
     def _on_sig_int(self, signal, frame):

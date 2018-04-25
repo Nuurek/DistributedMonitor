@@ -1,14 +1,17 @@
 {
-  "0": {
-    "address": "tcp://localhost",
-    "port": 50000
+  "peers": {
+    "0": {
+      "address": "tcp://localhost",
+      "port": 50000
+    },
+    "1": {
+      "address": "tcp://localhost",
+      "port": 50001
+    },
+    "2": {
+      "address": "tcp://localhost",
+      "port": 50002
+    }
   },
-  "1": {
-    "address": "tcp://localhost",
-    "port": 50001
-  },
-  "2": {
-    "address": "tcp://localhost",
-    "port": 50002
-  }
+  "initial_token_holder": "0"
 }
