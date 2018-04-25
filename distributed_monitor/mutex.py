@@ -1,26 +1,17 @@
 from collections import deque
 from typing import Dict
 
+from distributed_monitor.communicator import Channel
+from distributed_monitor.mutex_token import Token
+
 RequestNumbers = Dict[str, int]
-
-
-class Token:
-
-    def __init__(self, last_request_numbers, queue):
-        self.last_request_numbers: RequestNumbers = last_request_numbers
-        self.queue = queue
-
-    def __str__(self):
-        return self.__repr__()
-
-    def __repr__(self):
-        return str(self.__dict__)
 
 
 class DistributedMutex:
 
-    def __init__(self, communicator, peer_name, peers, initial_token_holder):
-        self.communicator = communicator
+    def __init__(self, channel: Channel, peer_name: str, peers, initial_token_holder: str):
+        self.channel = channel
+        self.channel.subscribe(self._on_message)
         self.peer_name = peer_name
         self.peers = peers
         self._request_numbers: RequestNumbers = {peer: 0 for peer in self.peers}
@@ -43,3 +34,6 @@ class DistributedMutex:
 
     def is_locked(self) -> bool:
         return self._is_locked
+
+    def _on_message(self, message):
+        print(f'[{self.peer_name}] {message}')

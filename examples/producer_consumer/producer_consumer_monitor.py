@@ -9,10 +9,10 @@ class ProducerConsumerMonitor(DistributedMonitor):
 
     protected_data = ['count']
 
-    def __init__(self, channel: str, peer_name: str, config: dict):
+    def __init__(self, channel_name: str, peer_name: str, config: dict):
         self.count = 0
 
-        super().__init__(channel, peer_name, config)
+        super().__init__(channel_name, peer_name, config)
 
     def enter(self):
         self.mutex.lock()
@@ -30,7 +30,7 @@ class ProducerConsumerMonitor(DistributedMonitor):
         for _ in range(1):
             sleep(random.random())
             self.enter()
-            self.communicator.broadcast_message(addresses, {
+            self.channel.broadcast_message(addresses, {
                 'peer': self.peer_name,
                 'body:': 'lock',
                 'token': self.mutex.token
@@ -38,7 +38,7 @@ class ProducerConsumerMonitor(DistributedMonitor):
 
             self.remove()
             sleep(random.random())
-            self.communicator.broadcast_message(addresses, {
+            self.channel.broadcast_message(addresses, {
                 'peer': self.peer_name,
                 'body:': 'unlock',
                 'token': self.mutex.token

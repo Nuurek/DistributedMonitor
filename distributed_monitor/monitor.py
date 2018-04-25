@@ -1,4 +1,4 @@
-from distributed_monitor.communicator import Communicator
+from distributed_monitor.communicator import Communicator, Channel
 from distributed_monitor.mutex import DistributedMutex
 
 
@@ -40,12 +40,7 @@ class DistributedMonitor:
 
         super().__init_subclass__(**kwargs)
 
-    # def __getattribute__(self, item):
-    #     if item != 'protected_data' and item in self.protected_data:
-    #         print("Protected:", item)
-    #     return self.__getattr__(item)
-
-    def __init__(self, channel: str, peer_name: str, config: dict):
+    def __init__(self, channel_name: str, peer_name: str, config: dict):
         self.peer_name = peer_name
 
         self.peers = config['peers']
@@ -55,4 +50,5 @@ class DistributedMonitor:
             peer['address'] += ':' + str(peer['port'])
 
         self.communicator = Communicator(self.port)
-        self.mutex = DistributedMutex(self.communicator, self.peer_name, **config)
+        self.channel = Channel(self.communicator, channel_name)
+        self.mutex = DistributedMutex(self.channel, self.peer_name, **config)
