@@ -30,7 +30,7 @@ class ProducerConsumerMonitor(DistributedMonitor):
         for _ in range(1):
             sleep(random.random())
             self.enter()
-            self.channel.broadcast_message(addresses, {
+            self.channel.broadcast_message('mutex', addresses, {
                 'peer': self.peer_name,
                 'body:': 'lock',
                 'token': self.mutex.token
@@ -38,7 +38,7 @@ class ProducerConsumerMonitor(DistributedMonitor):
 
             self.remove()
             sleep(random.random())
-            self.channel.broadcast_message(addresses, {
+            self.channel.broadcast_message('mutex', addresses, {
                 'peer': self.peer_name,
                 'body:': 'unlock',
                 'token': self.mutex.token

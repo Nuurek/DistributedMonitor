@@ -11,7 +11,7 @@ class DistributedMutex:
 
     def __init__(self, channel: Channel, peer_name: str, peers, initial_token_holder: str):
         self.channel = channel
-        self.channel.subscribe(self._on_message)
+        self.channel.subscribe('mutex', self._on_message)
         self.peer_name = peer_name
         self.peers = peers
         self._request_numbers: RequestNumbers = {peer: 0 for peer in self.peers}
