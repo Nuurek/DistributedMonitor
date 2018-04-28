@@ -25,21 +25,10 @@ class ProducerConsumerMonitor(DistributedMonitor):
         self.mutex.unlock()
 
     def run(self):
-        addresses = [peer['address'] for peer in self.peers.values()]
 
         for _ in range(1):
             sleep(random.random())
             self.enter()
-            self.channel.broadcast_message('mutex', addresses, {
-                'peer': self.peer_name,
-                'body:': 'lock',
-                'token': self.mutex.token
-            })
 
-            self.remove()
             sleep(random.random())
-            self.channel.broadcast_message('mutex', addresses, {
-                'peer': self.peer_name,
-                'body:': 'unlock',
-                'token': self.mutex.token
-            })
+            self.remove()

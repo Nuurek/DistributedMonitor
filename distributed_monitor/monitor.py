@@ -42,13 +42,15 @@ class DistributedMonitor:
 
     def __init__(self, channel_name: str, peer_name: str, config: dict):
         self.peer_name = peer_name
+        self.peers = list(config['peers'].keys())
 
-        self.peers = config['peers']
-        self.port = self.peers[self.peer_name]['port']
-        self.peers.pop(self.peer_name)
-        for peer in self.peers.values():
-            peer['address'] += ':' + str(peer['port'])
+        port = config['peers'][self.peer_name]['port']
+        peer_addresses = {name: data['address'] + ':' + str(data['port']) for name, data in config['peers'].items()}
+        self.communicator = Communicator(port, peer_addresses)
 
-        self.communicator = Communicator(self.port)
-        self.channel = Channel(self.communicator, channel_name)
-        self.mutex = DistributedMutex(self.channel, self.peer_name, **config)
+        self.channel = Channel(self.communicator, channel_name, self.peer_name)
+
+        mutex_name = 'monitor-mutex'
+        is_initial_token_holder = self.peer_name == config['initial_token_holder']
+
+        self.mutex = DistributedMutex(mutex_name, self.channel, self.peer_name, self.peers, is_initial_token_holder)
