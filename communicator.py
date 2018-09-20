@@ -1,4 +1,3 @@
-import json
 import signal
 import sys
 import threading
@@ -6,7 +5,7 @@ from typing import Dict, List, Callable
 
 import zmq
 
-from distributed_monitor.encoder import Encoder, Decoder
+from encoder import Encoder, Decoder
 
 Callback = Callable[[str, str, object], None]
 

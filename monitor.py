@@ -1,5 +1,5 @@
-from distributed_monitor.communicator import Communicator, Channel
-from distributed_monitor.mutex import DistributedMutex
+from communicator import Communicator, Channel
+from mutex import DistributedMutex
 
 
 class NotLockedException(Exception):

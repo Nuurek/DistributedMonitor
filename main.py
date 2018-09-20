@@ -2,7 +2,7 @@ import argparse
 import json
 import sys
 
-from producer_consumer.producer_consumer_monitor import ProducerConsumerMonitor
+from producer_consumer_monitor import ProducerConsumerMonitor
 
 DEFAULT_PEERS_FILE_NAME = 'peers.json'
 

@@ -1,7 +1,6 @@
-import random
 from time import sleep
 
-from distributed_monitor.monitor import DistributedMonitor
+from monitor import DistributedMonitor
 
 
 class ProducerConsumerMonitor(DistributedMonitor):

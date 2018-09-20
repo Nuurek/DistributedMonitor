@@ -2,8 +2,8 @@ from collections import deque
 from threading import Lock, Event
 from typing import Dict, List
 
-from distributed_monitor.communicator import MessageType, Channel
-from distributed_monitor.mutex_token import Token
+from communicator import MessageType, Channel
+from mutex_token import Token
 
 RequestNumbers = Dict[str, int]
 
