@@ -32,8 +32,8 @@ class Communicator(object):
         self.peer_addresses = peer_addresses
 
         self.context = zmq.Context()
-        self.receive_socket = self.context.socket(zmq.REP)
-        self.send_socket = self.context.socket(zmq.REQ)
+        self.receive_socket = self.context.socket(zmq.PULL)
+        self.send_socket = self.context.socket(zmq.PUSH)
 
         signal.signal(signal.SIGINT, self._on_sig_int)
 
@@ -54,8 +54,11 @@ class Communicator(object):
         }
 
         self.send_socket.connect(address)
+        # self._log(f'Sending {message} to {receiver}')
         self.send_socket.send_json(message, cls=Encoder)
-        self.send_socket.recv()
+        # self._log('Sent message')
+        # self.send_socket.recv()
+        # self._log('Received ACK')
         self.send_socket.disconnect(address)
 
     def broadcast_message(self, channel: str, tag: str, addresses: List[str], message):
@@ -75,6 +78,7 @@ class Communicator(object):
         self.receive_socket.bind(f'tcp://*:{self.port}')
         while True:
             message = self.receive_socket.recv_json(cls=Decoder)
+            # self._log(message)
             channel = message['channel']
             tag = message['tag']
             message = message['message']
@@ -83,7 +87,7 @@ class Communicator(object):
                 for callback in self._receive_callbacks[channel][tag]:
                     callback(message)
 
-            self.receive_socket.send_string("ACK")
+            # self.receive_socket.send_string("ACK")
 
     def _on_sig_int(self, signal, frame):
         self.context.term()
@@ -102,13 +106,13 @@ class Channel:
         self.channel_name = channel_name
         self.sender = sender
 
-    def send_message(self, tag: str, address: str, message_type: str, message: object):
+    def send_message(self, tag: str, peer: str, message_type: str, message: object):
         packed_message = self._pack_message(message_type, message)
-        self.communicator.send_message(self.channel_name, tag, address, packed_message)
+        self.communicator.send_message(self.channel_name, tag, peer, packed_message)
 
-    def broadcast_message(self, tag: str, addresses: List[str], message_type: str, message: object):
+    def broadcast_message(self, tag: str, peers: List[str], message_type: str, message: object):
         packed_message = self._pack_message(message_type, message)
-        self.communicator.broadcast_message(self.channel_name, tag, addresses, packed_message)
+        self.communicator.broadcast_message(self.channel_name, tag, peers, packed_message)
 
     def subscribe(self, tag: str, callback: Callback):
         def unpack_callback(message):

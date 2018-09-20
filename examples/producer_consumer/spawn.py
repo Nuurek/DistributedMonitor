@@ -31,7 +31,7 @@ def main():
             'python',
             'main.py',
             f'--name={name}',
-            f'--peers_file={args.peers_file}'
+            f'--peers-file={args.peers_file}'
         ]
         peers.append(Popen(command))
 

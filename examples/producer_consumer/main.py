@@ -9,7 +9,7 @@ DEFAULT_PEERS_FILE_NAME = 'peers.json'
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--name', type=str, required=True, help="Name of the peer")
-    parser.add_argument('--peers_file', type=str, help="Path to the config file", default=DEFAULT_PEERS_FILE_NAME)
+    parser.add_argument('--peers-file', type=str, help="Path to the config file", default=DEFAULT_PEERS_FILE_NAME)
 
     args = parser.parse_args(sys.argv[1:])
 

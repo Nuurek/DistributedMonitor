@@ -27,8 +27,13 @@ class ProducerConsumerMonitor(DistributedMonitor):
     def run(self):
 
         for _ in range(1):
-            sleep(random.random())
+            # sleep(random.random())
             self.enter()
 
-            sleep(random.random())
+            sleep(1)
+
+            # sleep(random.random())
             self.remove()
+
+        while True:
+            pass
