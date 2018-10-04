@@ -16,7 +16,8 @@ class DistributedMonitor:
             def is_mutex_locked(instance: DistributedMonitor) -> bool:
                 try:
                     hasattr(instance, 'mutex')
-                    return instance.mutex.is_locked()
+                    return True
+                    # return instance.mutex.is_locked()
                 except AttributeError:
                     return True
 
@@ -54,3 +55,23 @@ class DistributedMonitor:
         is_initial_token_holder = self.peer_name == config['initial_token_holder']
 
         self.mutex = DistributedMutex(mutex_name, self.channel, self.peer_name, self.peers, is_initial_token_holder)
+
+    def lock(self):
+        print('lock')
+
+    def unlock(self):
+        print('unlock')
+
+
+class NotDistributedMonitorSubclassException(Exception):
+    pass
+
+
+def entry(func):
+    def method_wrapper(instance: DistributedMonitor, *args, **kwargs):
+        if not issubclass(type(instance), DistributedMonitor):
+            raise NotDistributedMonitorSubclassException()
+        instance.lock()
+        func(instance, *args, **kwargs)
+        instance.unlock()
+    return method_wrapper

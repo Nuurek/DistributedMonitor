@@ -1,6 +1,6 @@
 from time import sleep
 
-from monitor import DistributedMonitor
+from monitor import DistributedMonitor, entry
 
 
 class ProducerConsumerMonitor(DistributedMonitor):
@@ -13,15 +13,19 @@ class ProducerConsumerMonitor(DistributedMonitor):
 
         super().__init__(channel_name, peer_name, config)
 
+    @entry
     def enter(self):
-        self.mutex.lock()
+        # self.mutex.lock()
         self.count += 1
-        self.mutex.unlock()
+        print(self.count)
+        # self.mutex.unlock()
 
+    @entry
     def remove(self):
-        self.mutex.lock()
+        # self.mutex.lock()
         self.count -= 1
-        self.mutex.unlock()
+        print(self.count)
+        # self.mutex.unlock()
 
     def run(self):
 
