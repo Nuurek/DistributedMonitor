@@ -3,6 +3,7 @@ from collections import deque
 from time import sleep
 from typing import Dict, Any
 
+from conditional_variable import ConditionalVariable
 from monitor import DistributedMonitor, entry
 
 
@@ -10,6 +11,8 @@ class ProducerConsumerMonitor(DistributedMonitor):
     MAX = 10
 
     protected_data = ['queue']
+    empty = ConditionalVariable()
+    full = ConditionalVariable()
 
     def __init__(self, peer_name: str, config: dict):
         super().__init__(peer_name, config)

@@ -4,6 +4,7 @@ from typing import Dict, Any
 
 from channel import Channel
 from communicator import Communicator
+from conditional_variable import ConditionalVariable
 from messages import RequestMessage, TokenMessage
 from monitor_token import Token
 
@@ -37,12 +38,23 @@ class DistributedMonitor:
         self._has_token = Event()
         self._semaphore = Semaphore()
         self._in_critical_section = Event()
+
+        conditional_variable_names = []
+        for attribute_name in self.__dir__():
+            attribute = getattr(self, attribute_name)
+            if isinstance(attribute, ConditionalVariable):
+                conditional_variable_names.append(attribute_name)
+                conditional_variable: ConditionalVariable = attribute
+                conditional_variable._initialize(self, attribute_name)
+
         is_initial_token_holder = self.peer_name == config['initial_token_holder']
         if is_initial_token_holder:
             self.token = Token(
                 last_request_numbers={peer: 0 for peer in all_peers},
                 queue=deque(),
-                conditional_variable_queues={},
+                conditional_variable_queues={
+                    name: deque() for name in conditional_variable_names
+                },
                 signalled_queue=deque()
             )
             self._has_token.set()
@@ -53,6 +65,7 @@ class DistributedMonitor:
         self._semaphore.acquire()
         if self._has_token.is_set():
             self._log('Already got token')
+            self._in_critical_section.set()
         else:
             self._request_numbers[self.peer_name] += 1
             request_message = RequestMessage(request_number=self._request_numbers[self.peer_name])
@@ -62,7 +75,6 @@ class DistributedMonitor:
             self._has_token.wait()
             self._semaphore.acquire()
 
-        self._in_critical_section.set()
         self._semaphore.release()
 
     def _unlock(self):
