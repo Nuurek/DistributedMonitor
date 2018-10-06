@@ -26,5 +26,6 @@
       "task": "consumer"
     }
   },
-  "initial_token_holder": "0"
+  "initial_token_holder": "0",
+  "queue_size": 5
 }

@@ -68,13 +68,11 @@ class DistributedMonitor:
     def _lock(self):
         self._semaphore.acquire()
         if self._has_token.is_set():
-            self._log('Already got token')
             self._in_critical_section.set()
         else:
             self._request_numbers[self.peer_name] += 1
             request_message = RequestMessage(request_number=self._request_numbers[self.peer_name])
             self.channel.broadcast_message(self.peers, RequestMessage.to_dict(request_message))
-            self._log('Wait for token')
             self._semaphore.release()
             self._has_token.wait()
             self._semaphore.acquire()
@@ -112,17 +110,14 @@ class DistributedMonitor:
         self._semaphore.release()
 
     def _on_request(self, sender: str, message: RequestMessage):
-        print(f'[{sender}] -> [{self.peer_name}] REQUEST {message}')
         self._request_numbers[sender] = max([self._request_numbers[sender], message.request_number])
 
         if self._has_token.is_set() and not self._in_critical_section.is_set():
             last_sender_request_number = self.token.last_request_numbers[sender]
             if self._request_numbers[sender] == last_sender_request_number + 1:
-                self._log('Sending token')
                 self._send_token(sender)
 
     def _on_token(self, sender: str, message: TokenMessage):
-        print(f'[{sender}] -> [{self.peer_name}] TOKEN {message}')
         self.token = message.token
         protected_data = self.from_dict(message.protected_data)
         for attribute, value in protected_data.items():
@@ -130,7 +125,6 @@ class DistributedMonitor:
         self._has_token.set()
         self._signalled.set()
         self._in_critical_section.set()
-        self._log('Received token')
 
     def on_conditional_variable_wait(self, conditional_variable: ConditionalVariable):
         self._semaphore.acquire()
@@ -145,14 +139,12 @@ class DistributedMonitor:
         self._in_critical_section.clear()
         self._semaphore.release()
 
-        self._log('Waiting for signal', conditional_variable.name)
         self._signalled.clear()
         self._signalled.wait()
 
     def on_conditional_variable_signal(self, conditional_variable: ConditionalVariable):
         self._semaphore.acquire()
 
-        assert self._has_token.is_set(), self.peer_name
         cv_queue = self.token.conditional_variable_queues[conditional_variable.name]
         if len(cv_queue) > 0:
             self.token.signalled_queue.append(self.peer_name)
@@ -184,9 +176,6 @@ class DistributedMonitor:
     def from_dict(data: Dict[str, Any]) -> Dict[str, Any]:
         return data
 
-    def _log(self, *messages):
-        print(f'[{self.peer_name}]', *messages)
-
 
 class NotDistributedMonitorSubclassException(Exception):
     pass
@@ -197,9 +186,7 @@ def entry(func):
         if not issubclass(type(instance), DistributedMonitor):
             raise NotDistributedMonitorSubclassException()
         instance._lock()
-        assert instance._has_token.is_set(), instance.peer_name
         func(instance, *args, **kwargs)
-        assert instance._has_token.is_set(), instance.peer_name
         instance._unlock()
 
     return method_wrapper

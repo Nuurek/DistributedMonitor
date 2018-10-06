@@ -10,9 +10,9 @@ from main import DEFAULT_PEERS_FILE_NAME
 def main():
     peers = []
 
-    def kill_peers(signal_id, frame):
-        for peer in peers:
-            peer.kill()
+    def kill_peers(signal, frame):
+        for _peer in peers:
+            _peer.kill()
         sys.exit(0)
 
     signal.signal(signal.SIGINT, kill_peers)

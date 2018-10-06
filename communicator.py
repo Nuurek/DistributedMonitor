@@ -87,7 +87,7 @@ class Communicator:
                 for callback in self._receive_callbacks[communicator_message.channel]:
                     callback(communicator_message.message)
 
-    def _on_sig_int(self, signal, frame):
+    def _on_sig_int(self, sig_int, frame):
         self.context.term()
 
         sys.exit(0)
