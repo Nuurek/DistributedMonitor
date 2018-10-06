@@ -9,9 +9,9 @@ class Token:
             signalled_queue: deque
     ):
         self.last_request_numbers = last_request_numbers
-        self.queue = queue
-        self.conditional_variable_queues = conditional_variable_queues
-        self.signalled_queue = signalled_queue
+        self.queue: deque = queue
+        self.conditional_variable_queues: Dict[str, deque] = conditional_variable_queues
+        self.signalled_queue: Dict[str, deque] = signalled_queue
 
     @staticmethod
     def to_dict(instance) -> Dict:

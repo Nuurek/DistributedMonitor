@@ -1,4 +1,5 @@
 from collections import deque
+from functools import partial
 from threading import Event, Semaphore
 from typing import Dict, Any
 
@@ -38,6 +39,7 @@ class DistributedMonitor:
         self._has_token = Event()
         self._semaphore = Semaphore()
         self._in_critical_section = Event()
+        self._signalled = Event()
 
         conditional_variable_names = []
         for attribute_name in self.__dir__():
@@ -46,6 +48,8 @@ class DistributedMonitor:
                 conditional_variable_names.append(attribute_name)
                 conditional_variable: ConditionalVariable = attribute
                 conditional_variable._initialize(self, attribute_name)
+                conditional_variable.wait = partial(self.on_conditional_variable_wait, conditional_variable)
+                conditional_variable.signal = partial(self.on_conditional_variable_signal, conditional_variable)
 
         is_initial_token_holder = self.peer_name == config['initial_token_holder']
         if is_initial_token_holder:
@@ -81,14 +85,7 @@ class DistributedMonitor:
         self._semaphore.acquire()
         self.token.last_request_numbers[self.peer_name] = self._request_numbers[self.peer_name]
 
-        not_queued_peers = set(self.peers) - set(self.token.queue)
-        for peer in not_queued_peers:
-            if self._request_numbers[peer] == self.token.last_request_numbers[peer] + 1:
-                self.token.queue.append(peer)
-
-        if len(self.token.queue) > 0:
-            peer = self.token.queue.popleft()
-            self._send_token(peer)
+        self._respond_to_token_requests()
 
         self._in_critical_section.clear()
         self._semaphore.release()
@@ -131,8 +128,53 @@ class DistributedMonitor:
         for attribute, value in protected_data.items():
             setattr(self, attribute, value)
         self._has_token.set()
+        self._signalled.set()
         self._in_critical_section.set()
         self._log('Received token')
+
+    def on_conditional_variable_wait(self, conditional_variable: ConditionalVariable):
+        self._semaphore.acquire()
+
+        self.token.last_request_numbers[self.peer_name] = self._request_numbers[self.peer_name]
+
+        cv_queue = self.token.conditional_variable_queues[conditional_variable.name]
+        cv_queue.append(self.peer_name)
+
+        self._respond_to_token_requests()
+
+        self._in_critical_section.clear()
+        self._semaphore.release()
+
+        self._log('Waiting for signal', conditional_variable.name)
+        self._signalled.clear()
+        self._signalled.wait()
+
+    def on_conditional_variable_signal(self, conditional_variable: ConditionalVariable):
+        self._semaphore.acquire()
+
+        assert self._has_token.is_set(), self.peer_name
+        cv_queue = self.token.conditional_variable_queues[conditional_variable.name]
+        if len(cv_queue) > 0:
+            self.token.signalled_queue.append(self.peer_name)
+            peer = cv_queue.popleft()
+            self._send_token(peer)
+            self._semaphore.release()
+            self._has_token.wait()
+
+        self._semaphore.release()
+
+    def _respond_to_token_requests(self):
+        not_queued_peers = set(self.peers) - set(self.token.queue)
+        for peer in not_queued_peers:
+            if self._request_numbers[peer] == self.token.last_request_numbers[peer] + 1:
+                self.token.queue.append(peer)
+
+        if len(self.token.signalled_queue) > 0:
+            peer = self.token.signalled_queue.popleft()
+            self._send_token(peer)
+        elif len(self.token.queue) > 0:
+            peer = self.token.queue.popleft()
+            self._send_token(peer)
 
     @staticmethod
     def to_dict(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -142,8 +184,8 @@ class DistributedMonitor:
     def from_dict(data: Dict[str, Any]) -> Dict[str, Any]:
         return data
 
-    def _log(self, message):
-        print(f'[{self.peer_name}] {message}')
+    def _log(self, *messages):
+        print(f'[{self.peer_name}]', *messages)
 
 
 class NotDistributedMonitorSubclassException(Exception):

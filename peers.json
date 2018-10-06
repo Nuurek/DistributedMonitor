@@ -2,23 +2,28 @@
   "peers": {
     "0": {
       "address": "tcp://localhost",
-      "port": 50000
+      "port": 50000,
+      "task": "producer"
     },
     "1": {
       "address": "tcp://localhost",
-      "port": 50001
+      "port": 50001,
+      "task": "producer"
     },
     "2": {
       "address": "tcp://localhost",
-      "port": 50002
+      "port": 50002,
+      "task": "producer"
     },
     "3": {
       "address": "tcp://localhost",
-      "port": 50003
+      "port": 50003,
+      "task": "consumer"
     },
     "4": {
       "address": "tcp://localhost",
-      "port": 50004
+      "port": 50004,
+      "task": "consumer"
     }
   },
   "initial_token_holder": "0"
