@@ -1,6 +1,7 @@
 import random
 from collections import deque
 from time import sleep
+from typing import Dict, Any
 
 from monitor import DistributedMonitor, entry
 
@@ -17,12 +18,12 @@ class ProducerConsumerMonitor(DistributedMonitor):
 
     @entry
     def enter(self, item):
-        self.queue.appendleft(item)
+        self.queue.append(item)
         self._log(self.queue)
 
     @entry
     def remove(self):
-        item = self.queue.pop()
+        item = self.queue.popleft()
         self._log(self.queue)
         return item
 
@@ -34,3 +35,15 @@ class ProducerConsumerMonitor(DistributedMonitor):
 
             sleep(random.random() * 2)
             self.remove()
+
+    @staticmethod
+    def to_dict(data: Dict[str, Any]) -> Dict[str, any]:
+        return {
+            'queue': list(data['queue'])
+        }
+
+    @staticmethod
+    def from_dict(data: Dict[str, Any]) -> Dict[str, Any]:
+        return {
+            'queue': deque(data['queue'])
+        }
