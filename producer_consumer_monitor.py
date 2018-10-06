@@ -1,3 +1,5 @@
+import random
+from collections import deque
 from time import sleep
 
 from monitor import DistributedMonitor, entry
@@ -6,37 +8,29 @@ from monitor import DistributedMonitor, entry
 class ProducerConsumerMonitor(DistributedMonitor):
     MAX = 10
 
-    protected_data = ['count']
+    protected_data = ['queue']
 
     def __init__(self, peer_name: str, config: dict):
-        self.count = 0
-
         super().__init__(peer_name, config)
 
+        self.queue = deque()
+
     @entry
-    def enter(self):
-        # self.mutex.lock()
-        self.count += 1
-        print(self.count)
-        # self.mutex.unlock()
+    def enter(self, item):
+        self.queue.appendleft(item)
+        self._log(self.queue)
 
     @entry
     def remove(self):
-        # self.mutex.lock()
-        self.count -= 1
-        print(self.count)
-        # self.mutex.unlock()
+        item = self.queue.pop()
+        self._log(self.queue)
+        return item
 
     def run(self):
 
-        for _ in range(1):
-            # sleep(random.random())
-            self.enter()
-
-            sleep(1)
-
-            # sleep(random.random())
-            self.remove()
-
         while True:
-            pass
+            sleep(random.random() * 2)
+            self.enter(random.randint(1, self.MAX))
+
+            sleep(random.random() * 2)
+            self.remove()
