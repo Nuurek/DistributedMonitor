@@ -18,22 +18,22 @@ class ProducerConsumerMonitor(DistributedMonitor):
 
     @entry
     def enter(self, item):
+        sleep(random.random() * 2)
         self.queue.append(item)
         self._log(self.queue)
 
     @entry
     def remove(self):
+        sleep(random.random() * 2)
         item = self.queue.popleft()
         self._log(self.queue)
         return item
 
     def run(self):
-
         while True:
-            sleep(random.random() * 2)
-            self.enter(random.randint(1, self.MAX))
+            self.enter(random.randint(0, self.MAX))
+            self.enter(random.randint(0, self.MAX))
 
-            sleep(random.random() * 2)
             self.remove()
 
     @staticmethod

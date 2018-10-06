@@ -11,6 +11,14 @@
     "2": {
       "address": "tcp://localhost",
       "port": 50002
+    },
+    "3": {
+      "address": "tcp://localhost",
+      "port": 50003
+    },
+    "4": {
+      "address": "tcp://localhost",
+      "port": 50004
     }
   },
   "initial_token_holder": "0"
