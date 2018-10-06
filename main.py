@@ -17,5 +17,5 @@ if __name__ == '__main__':
         config = json.load(file)
 
     peer_name = args.name
-    peer = ProducerConsumerMonitor('default-channel', peer_name, config)
+    peer = ProducerConsumerMonitor(peer_name, config)
     peer.run()

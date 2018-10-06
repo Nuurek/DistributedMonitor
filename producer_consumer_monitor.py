@@ -8,10 +8,10 @@ class ProducerConsumerMonitor(DistributedMonitor):
 
     protected_data = ['count']
 
-    def __init__(self, channel_name: str, peer_name: str, config: dict):
+    def __init__(self, peer_name: str, config: dict):
         self.count = 0
 
-        super().__init__(channel_name, peer_name, config)
+        super().__init__(peer_name, config)
 
     @entry
     def enter(self):
